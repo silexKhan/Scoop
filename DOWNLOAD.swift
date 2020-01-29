@@ -31,13 +31,15 @@ public class DOWNLOAD: NSObject, URLSessionDownloadDelegate {
     //response 정보
     public var error: Error?
     public var response: HTTPURLResponse?
-    /*
-     @param identify: String -          task로 생성될 이름
-     @param connectURL: URL -           다운로드 받을 URL
-     @param downloadPath: String -      저장할 로컬 경로
-     @param completeHandler: func -     완료(에러포함) 시 받을 핸들러 모델을 돌려줌
+    
+    /**
+        초기화 필요한게 많다
+     - parameter identify:          task로 생성될 이름
+     - parameter connectURL: 다운로드 받을 URL
+     - parameter downloadPath: String -      저장할 로컬 경로
+     - parameter completeHandler: func -     완료(에러포함) 시 받을 핸들러 모델을 돌려줌
      */
-    public init(identify: String, connectURL: URL, downloadPath: String, progressHandler: @escaping PROGRESS_HANDLER, completeHandler: @escaping PROGRESS_HANDLER) {
+    public init(identify: String, connectURL: URL, downloadPath: String, progressHandler: PROGRESS_HANDLER? = nil, completeHandler: PROGRESS_HANDLER? = nil) {
         
         self.identify = identify
         self.connectURL = connectURL
@@ -46,7 +48,7 @@ public class DOWNLOAD: NSObject, URLSessionDownloadDelegate {
         self.completeHandler = completeHandler
     }
     
-    /*
+    /**
      다운로드를 시작(재개)함
         MEMO : downloadTask(with: {}, completionHandler: {} ) 사용 시 "Completion handler blocks are not supported in background sessions. Use a delegate instead" 에러 발생
      */
@@ -67,7 +69,7 @@ public class DOWNLOAD: NSObject, URLSessionDownloadDelegate {
         isDownloading = true
     }
     
-    /*
+    /**
      다운로드 일시중지
      */
     public func pause() {
