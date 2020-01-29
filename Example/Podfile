@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'Scoop_Example' do
+  pod 'Scoop', :path => '../'
+
+  target 'Scoop_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end

@@ -1,0 +1,16 @@
+PODS:
+  - Scoop (0.1.0)
+
+DEPENDENCIES:
+  - Scoop (from `../`)
+
+EXTERNAL SOURCES:
+  Scoop:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Scoop: 70f0a47d6dc0199b07c7c3a0e0122f6bd13bfcf3
+
+PODFILE CHECKSUM: 738cf334331dc664119bd68ad323def2623252f7
+
+COCOAPODS: 1.8.4
