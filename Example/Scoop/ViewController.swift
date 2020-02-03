@@ -25,7 +25,7 @@ class ViewController: UIViewController {
     internal func initialize() {
         
         guard let connectURL = URL(string: "https://vt.tumblr.com/tumblr_o600t8hzf51qcbnq0_480.mp4") else { return }
-        let download = DOWNLOAD(identify: "Scoop", connectURL: connectURL, downloadPath: "scoop", progressHandler: { (progress) in
+        let download = SCOOP(identify: "Scoop", connectURL: connectURL, downloadPath: "scoop", progressHandler: { (progress) in
             print("progress - ", progress.progress)
         }) { (sucess) in
             print("sucess - ", sucess.progress)

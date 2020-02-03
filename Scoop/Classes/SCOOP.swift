@@ -8,9 +8,9 @@
 import Foundation
 
 //콜백타입 선언
-public typealias PROGRESS_HANDLER = (DOWNLOAD) -> Void
+public typealias PROGRESS_HANDLER = (SCOOP) -> Void
 
-public class DOWNLOAD: NSObject, URLSessionDownloadDelegate {
+public class SCOOP: NSObject {    
     
     //생성시 사용되는 필수 맴버
     public var identify: String                //task 네임
@@ -28,7 +28,7 @@ public class DOWNLOAD: NSObject, URLSessionDownloadDelegate {
     public var progressHandler: PROGRESS_HANDLER?
     public var completeHandler: PROGRESS_HANDLER?
     
-    //response 정보
+    /** response 정보 */
     public var error: Error?
     public var response: HTTPURLResponse?
     
@@ -84,36 +84,29 @@ public class DOWNLOAD: NSObject, URLSessionDownloadDelegate {
         isDownloading = false
     }
     
+}
+
+
+
+extension SCOOP: URLSessionDownloadDelegate, Filesable {
     
-    /*  implements URLSessionDownloadDelegate */
-    
+    /**
+        다운로드가 완료되었을때, 임시파일상태이며 이곳에서 파일을 복사, 이동 하지 않으면 삭제됨
+     */
     public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         
-        //다운로드 받을 url에서 lastPath를 잘라서 파일명으로 사용한다
-        func localFilePath(for url: URL) -> URL {
-            return path.appendingPathComponent(url.lastPathComponent)
-        }
-        let fileManager = FileManager.default
         //다운로드완료 로컬에 파일 write코드 추가
-        guard let sourceURL = downloadTask.originalRequest?.url else { return }
-        let writeURL = localFilePath(for: sourceURL)
-        do {
-            //폴더만들고 파일쓴다, TODO : 디렉토리 관련 메서드 프로토콜로 빼서 만들자 ( 자경이 작업 )
-            try fileManager.createDirectory(atPath: path.path, withIntermediateDirectories: true, attributes: nil)
-            try fileManager.moveItem(at: location, to: writeURL)
-            downloaded = true
-        } catch let error {
-            print("Could not copy file to disk: \(error.localizedDescription)")
+        guard let sourceURL = downloadTask.originalRequest?.url, let writeURL = writeURL(basePath: getBaseDownloadURL(for: .documents, createFolder: "scoop"), requestURL: sourceURL) else { return }
+        move(at: location, to: writeURL) { (sucess) in
+            self.downloaded = sucess
         }
     }
     
+    
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         
-        guard error == nil else {
-            print("------ HTTP Request Error : \(String(describing: error?.localizedDescription))")
-            return
-        }
         guard let httpResponse = task.response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            print("------ HTTP Request Error : \(String(describing: error?.localizedDescription))")
             self.error = error
             completeHandler?(self)
             return
@@ -128,9 +121,4 @@ public class DOWNLOAD: NSObject, URLSessionDownloadDelegate {
         self.progress = progress
         progressHandler?(self)
     }
-    
-    
 }
-
-
-
