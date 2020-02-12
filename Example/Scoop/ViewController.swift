@@ -12,28 +12,44 @@ import Scoop
 class DownloadTableViewCell: UITableViewCell {
     
     @IBOutlet weak var title: UILabel!
+    @IBOutlet weak var descript: UILabel!
     @IBOutlet weak var progress: UIProgressView!
     var data:SCOOP?
+    
+    internal func updateState(model: SCOOP) {
+        
+        var stateDescription: String = ""
+        switch model.result {
+        case .CACHED :          stateDescription = "이미 저장된 파일이 존재합니다."
+        case .DOWNLOADING :     stateDescription = "다운로드 중입니다."
+        case .DOWNLOADED :      stateDescription = "다운로드가 완료되었습니다."
+        case .PAUSED :          stateDescription = "정지합니다."
+        case .ERROR :           stateDescription = "ERROR - \(model.error?.localizedDescription ?? "")"
+        }
+        descript.text = stateDescription
+    }
     
     internal func updateModel(model: SCOOP) {
         
         guard data?.identify != model.identify else { return }
         data = model
         title.text = model.identify
+        updateState(model: model)
         progress.progress = model.progress
         model.progressHandler = { result in
             print("progress - ", result.progress)
             self.progress.progress = result.progress
         }
         model.completeHandler = { result in
+            self.updateState(model: result)
             //self.backgroundColor = .cyan
-            print("completeHandler saved - ", result.savedURL)
+            print("completeHandler saved - ", result.savedURL?.path ?? "")
         }
         model.resume()
     }
 }
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, Filesable {
     
     @IBOutlet weak var tableview: UITableView!
     
@@ -67,12 +83,19 @@ class ViewController: UIViewController {
     
     @IBAction func addTouchUpHandler(_ sender: UIButton) {
         
-        dummyIndex = dummyIndex > dummy.count ? 0 : dummyIndex
+        dummyIndex = dummyIndex >= dummy.count ? 0 : dummyIndex
         if let url = URL(string: dummy[dummyIndex]) {
             downloads.append(SCOOP(connectURL: url))
         }
         tableview.reloadData()
         dummyIndex += 1
+    }
+    
+    @IBAction func deleteLocalCacheing(_ sender: UIButton) {
+        
+        if let baseURL = getBaseDownloadURL() {
+            remove(at: baseURL)
+        }
     }
     
 }
@@ -92,7 +115,6 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         cell.updateModel(model: downloads[indexPath.row])
         return cell
     }
-    
 }
 
 

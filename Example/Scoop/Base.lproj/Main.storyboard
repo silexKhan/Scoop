@@ -35,24 +35,34 @@
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="22" id="MSe-c4-ioB"/>
                                                     </constraints>
-                                                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
+                                                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="P0f-Ie-W85">
-                                                    <rect key="frame" x="20" y="44" width="374" height="2"/>
+                                                    <rect key="frame" x="20" y="59" width="374" height="2"/>
                                                 </progressView>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qxR-Ql-DXu">
+                                                    <rect key="frame" x="20" y="34" width="374" height="17"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                    <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstAttribute="trailing" secondItem="fpF-MB-e6R" secondAttribute="trailing" constant="20" id="0RP-ch-2Gn"/>
                                                 <constraint firstItem="fpF-MB-e6R" firstAttribute="top" secondItem="IvV-bB-xVd" secondAttribute="top" constant="10" id="1hU-nt-l4j"/>
+                                                <constraint firstItem="qxR-Ql-DXu" firstAttribute="leading" secondItem="IvV-bB-xVd" secondAttribute="leading" constant="20" id="ATC-6w-HWP"/>
                                                 <constraint firstItem="fpF-MB-e6R" firstAttribute="leading" secondItem="IvV-bB-xVd" secondAttribute="leading" constant="20" id="Eau-Cx-lWr"/>
-                                                <constraint firstAttribute="bottom" secondItem="P0f-Ie-W85" secondAttribute="bottom" constant="20" id="Fub-4B-ozH"/>
+                                                <constraint firstAttribute="bottom" secondItem="P0f-Ie-W85" secondAttribute="bottom" constant="5" id="Fub-4B-ozH"/>
+                                                <constraint firstAttribute="trailing" secondItem="qxR-Ql-DXu" secondAttribute="trailing" constant="20" id="GAf-wS-FsZ"/>
                                                 <constraint firstAttribute="trailing" secondItem="P0f-Ie-W85" secondAttribute="trailing" constant="20" id="LXc-g0-mwr"/>
+                                                <constraint firstItem="qxR-Ql-DXu" firstAttribute="top" secondItem="fpF-MB-e6R" secondAttribute="bottom" constant="2" id="Xu8-le-hWO"/>
                                                 <constraint firstItem="P0f-Ie-W85" firstAttribute="leading" secondItem="IvV-bB-xVd" secondAttribute="leading" constant="20" id="eXM-M2-igA"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
+                                            <outlet property="descript" destination="qxR-Ql-DXu" id="7Ir-0l-ewh"/>
                                             <outlet property="progress" destination="P0f-Ie-W85" id="845-zq-NUs"/>
                                             <outlet property="title" destination="fpF-MB-e6R" id="Kbi-GC-h9P"/>
                                         </connections>
@@ -73,15 +83,27 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="SCOOP" id="hG8-Jc-uNP">
-                        <barButtonItem key="rightBarButtonItem" style="plain" id="wXm-g3-d9U">
-                            <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="contactAdd" lineBreakMode="middleTruncation" id="iw1-iF-8a2">
-                                <rect key="frame" x="369" y="10" width="25" height="24"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <connections>
-                                    <action selector="addTouchUpHandler:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="izV-R0-YCv"/>
-                                </connections>
-                            </button>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem style="plain" id="wXm-g3-d9U">
+                                <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="contactAdd" lineBreakMode="middleTruncation" id="iw1-iF-8a2">
+                                    <rect key="frame" x="369" y="10" width="25" height="24"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <connections>
+                                        <action selector="addTouchUpHandler:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="izV-R0-YCv"/>
+                                    </connections>
+                                </button>
+                            </barButtonItem>
+                            <barButtonItem style="plain" id="T1D-p6-sR2">
+                                <button key="customView" opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="RNF-Hc-KFE">
+                                    <rect key="frame" x="306" y="7" width="55" height="30"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <state key="normal" title="DELETE"/>
+                                    <connections>
+                                        <action selector="deleteLocalCacheing:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="8bQ-bX-2Mr"/>
+                                    </connections>
+                                </button>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
                         <outlet property="tableview" destination="e0c-fs-SEw" id="trp-2N-LyF"/>
