@@ -1,0 +1,6 @@
+framework module Scoop {
+  umbrella header "Scoop-umbrella.h"
+
+  export *
+  module * { export * }
+}
