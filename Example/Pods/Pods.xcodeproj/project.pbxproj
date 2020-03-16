@@ -47,31 +47,31 @@
 		3212113385A8FBBDB272BD23C409FF61 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		33FE0A3E22BB53E62D69A7F5C3813B04 /* Scoop-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Scoop-dummy.m"; sourceTree = "<group>"; };
 		3B2B3B6689FA9EDF56C417488F4E3BDA /* Scoop.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = Scoop.modulemap; sourceTree = "<group>"; };
-		429FE93B7D996482532BC6D4C2CCE5C8 /* Scoop.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Scoop.framework; path = Scoop.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		429FE93B7D996482532BC6D4C2CCE5C8 /* Scoop.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Scoop.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		445EAAD6C7351CCD397180B939E06279 /* Scoop.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Scoop.xcconfig; sourceTree = "<group>"; };
 		47BB2C5045ADFEDC9EB45C4B6FBC89B6 /* Pods-Scoop_Example-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-Scoop_Example-umbrella.h"; sourceTree = "<group>"; };
 		4E4781C2567E209A489619ADDA68DA76 /* Scoop-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Scoop-Info.plist"; sourceTree = "<group>"; };
-		58DD0A91136E789E20973346CB3BCC3A /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; path = LICENSE; sourceTree = "<group>"; };
+		58DD0A91136E789E20973346CB3BCC3A /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		5B30A727DCB4E934FD9671B0400AF638 /* Pods-Scoop_Example-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-Scoop_Example-dummy.m"; sourceTree = "<group>"; };
 		71C8DE9CD8E0CEE70FC7C2D0DACF1289 /* Pods-Scoop_Example.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-Scoop_Example.modulemap"; sourceTree = "<group>"; };
 		737E93E46169BEC3C7CF2C16F37D71E2 /* Pods-Scoop_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Scoop_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		77B2BBB228B56A31CAAF8422DF9D1E9A /* Pods-Scoop_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Scoop_Example.debug.xcconfig"; sourceTree = "<group>"; };
-		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A31287B1909F5E6FF65AB929670FB625 /* Pods-Scoop_Example-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-Scoop_Example-acknowledgements.plist"; sourceTree = "<group>"; };
 		A870538121A88860424EDA3BC490EC5B /* Pods-Scoop_Tests-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-Scoop_Tests-Info.plist"; sourceTree = "<group>"; };
 		AA757680D1B1C71B74F794C94970423F /* SCOOP.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SCOOP.swift; path = Scoop/Classes/SCOOP.swift; sourceTree = "<group>"; };
-		AC2BAF9A0B2FD26586A56C46C0680631 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; path = README.md; sourceTree = "<group>"; };
+		AC2BAF9A0B2FD26586A56C46C0680631 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		B5FD001F77729C2E2FD28A03933EA0CE /* Pods-Scoop_Tests-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-Scoop_Tests-dummy.m"; sourceTree = "<group>"; };
-		BD0B1E4C3C9BD97C20E6BA4F114847C9 /* Scoop.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = Scoop.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		BD0B1E4C3C9BD97C20E6BA4F114847C9 /* Scoop.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; path = Scoop.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		C48CDB95D199954515571A4FE7D718C3 /* Pods-Scoop_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Scoop_Example.release.xcconfig"; sourceTree = "<group>"; };
 		CFB051034B0509D7507EB6764357FCB8 /* Pods-Scoop_Tests-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-Scoop_Tests-acknowledgements.plist"; sourceTree = "<group>"; };
 		D2552BA6E9273B13B23EF0003DE89D9B /* Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		DBDA0554CD869F6978EC125FB3082325 /* Scoop-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Scoop-umbrella.h"; sourceTree = "<group>"; };
-		DDD02703B578C185B6129B801666F2E3 /* Pods_Scoop_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_Scoop_Tests.framework; path = "Pods-Scoop_Tests.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDD02703B578C185B6129B801666F2E3 /* Pods_Scoop_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Scoop_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E15DD1524A23F514FBB66943ACB7E27D /* Pods-Scoop_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Scoop_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		E5F459A67BBA20DB8B2ADC4EB6512F3F /* Filesable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Filesable.swift; sourceTree = "<group>"; };
 		F0372F4E3736CEB7EF5331B78DDFE49A /* Scoop-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Scoop-prefix.pch"; sourceTree = "<group>"; };
-		F8B8D136C2F485A6A48FF9011DD73198 /* Pods_Scoop_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_Scoop_Example.framework; path = "Pods-Scoop_Example.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F8B8D136C2F485A6A48FF9011DD73198 /* Pods_Scoop_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Scoop_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FBBB9DF5F15264F549EDEE9D93E4D2B9 /* Pods-Scoop_Example-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-Scoop_Example-acknowledgements.markdown"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -199,8 +199,7 @@
 			children = (
 				D2552BA6E9273B13B23EF0003DE89D9B /* Extensions.swift */,
 			);
-			name = common;
-			path = Scoop/Classes/common;
+			path = common;
 			sourceTree = "<group>";
 		};
 		CF1408CF629C7361332E53B88F7BD30C = {
@@ -235,11 +234,11 @@
 		F673C91A4B8C0AE587563562D220BF4A /* Scoop */ = {
 			isa = PBXGroup;
 			children = (
-				AA757680D1B1C71B74F794C94970423F /* SCOOP.swift */,
+				294EB6C97C73BC820178185586904166 /* util */,
 				CB1CC2C789145D2CA9007CD369AFA740 /* common */,
+				AA757680D1B1C71B74F794C94970423F /* SCOOP.swift */,
 				DFE575A7D04C910C329C407BAA8A6074 /* Pod */,
 				0D2A4A1C6FEC52FE1F55862FC99F1F1D /* Support Files */,
-				294EB6C97C73BC820178185586904166 /* util */,
 			);
 			name = Scoop;
 			path = ../..;
@@ -516,8 +515,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRIP_INSTALLED_PRODUCT = NO;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 5.0;
 				SYMROOT = "${SRCROOT}/../build";
 			};
