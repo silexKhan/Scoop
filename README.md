@@ -1,4 +1,4 @@
-# Scoop
+# Scoop⛏
 Scoop는 심플하게 만든 다운로드 라이브러리입니다. 다운받은 파일 중 압축 해제 가능한 파일 경우 자동적으로 압축 해제합니다.
 Scoop is simply made for downloading files. And the downloaded files that can be unzip will be automatically unzipped. 
 ***
@@ -41,5 +41,5 @@ You can use download function as below.
 
 ## Contact To
 질문 또는 제안이 있으면 realsilex@gmail.com(silexKhan) 또는 jakyung8@gmail.com(JakyungYoon)에게 연락바랍니다. 📨
-If you have any questions or suggestions, feel free to write at realsilex@gmail.com(silexKhan) or jakyung8@gmail.com(JakyungYoon).
+If you have any questions or suggestions, feel free to write at realsilex@gmail.com(silexKhan) or jakyung8@gmail.com(JakyungYoon).📨
 ***
