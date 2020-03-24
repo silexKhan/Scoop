@@ -8,8 +8,8 @@
 
 Pod::Spec.new do |s|
   s.name             = 'Scoop'
-  s.version          = '0.1.0'
-  s.summary          = 'A short description of Scoop.'
+  s.version          = '1.0.0'
+  s.summary          = 'Scoop is simply made for downloading files and automatically unzip downloaded files.'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -18,13 +18,13 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-TODO: Add long description of the pod here.
+                        Scoop is simply made for downloading files. And the downloaded files that can be unzip will be automatically unzipped.
                        DESC
 
   s.homepage         = 'https://github.com/silexKhan/Scoop'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
-  s.author           = { 'silexKhan' => 'silex@golfzon.com' }
+  s.author           = { 'silexKhan' => 'realsilex@naver.com' , 'JakyungYoon' => 'jakyung8@naver.com'}
   s.source           = { :git => 'https://github.com/silexKhan/Scoop.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
