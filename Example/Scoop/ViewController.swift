@@ -24,6 +24,8 @@ class DownloadTableViewCell: UITableViewCell {
         case .DOWNLOADING :     stateDescription = "다운로드 중입니다."
         case .DOWNLOADED :      stateDescription = "다운로드가 완료되었습니다."
         case .PAUSED :          stateDescription = "정지합니다."
+        case .UNZIPPING:        stateDescription = "압축 해제 중입니다."
+        case .UNZIPPED :        stateDescription = "압축 해제 되었습니다."
         case .ERROR :           stateDescription = "ERROR - \(model.error?.localizedDescription ?? "")"
         }
         descript.text = stateDescription
@@ -58,7 +60,7 @@ class ViewController: UIViewController, Filesable {
     var downloads: [SCOOP] = []
     
     var dummyIndex: Int = 0
-    let dummy: [String] = ["https://homebrew.bintray.com/bottles/ffmpeg-4.2.2_1.catalina.bottle.tar.gz", "https://www.videoproc.com/download/videoproc-4k.dmg", "https://homebrew.bintray.com/bottles/ffmpeg-4.2.2_1.high_sierra.bottle.tar.gz"]
+    let dummy: [String] = ["https://www.ncdc.noaa.gov/orders/qclcd/QCLCD200706.zip","https://homebrew.bintray.com/bottles/ffmpeg-4.2.2_1.catalina.bottle.tar.gz", "https://www.videoproc.com/download/videoproc-4k.dmg", "https://homebrew.bintray.com/bottles/ffmpeg-4.2.2_1.high_sierra.bottle.tar.gz"]
 
     override func viewDidLoad() {
         super.viewDidLoad()

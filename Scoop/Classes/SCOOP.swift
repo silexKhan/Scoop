@@ -6,7 +6,7 @@
 //
 
 import Foundation
-
+import SSZipArchive
 
 public enum RESULT {
     
@@ -14,6 +14,8 @@ public enum RESULT {
     case PAUSED
     case DOWNLOADING
     case DOWNLOADED
+    case UNZIPPED
+    case UNZIPPING
     case ERROR
 }
 
@@ -21,13 +23,13 @@ public enum RESULT {
 /**
  -  Note: Example Code
  
-    guard let connectURL = URL(string: "https://vt.tumblr.com/tumblr_o600t8hzf51qcbnq0_480.mp4") else { return }
-    let download = SCOOP(identify: "Scoop", connectURL: connectURL, downloadPath: "scoop", progressHandler: { (progress) in
-        print("progress - ", progress.progress)
-    }) { (sucess) in
-        print("sucess - ", sucess.progress)
-    }
-    download.resume()
+ guard let connectURL = URL(string: "https://vt.tumblr.com/tumblr_o600t8hzf51qcbnq0_480.mp4") else { return }
+ let download = SCOOP(identify: "Scoop", connectURL: connectURL, downloadPath: "scoop", progressHandler: { (progress) in
+ print("progress - ", progress.progress)
+ }) { (sucess) in
+ print("sucess - ", sucess.progress)
+ }
+ download.resume()
  
  */
 public typealias SCOOP_HANDLER = (SCOOP) -> Void
@@ -57,7 +59,7 @@ public class SCOOP: NSObject {
     public var response: HTTPURLResponse?
     
     /**
-        초기화 필요한게 많다
+     초기화 필요한게 많다
      - parameter identify:   task로 생성될 이름
      - parameter connectURL: 다운로드 받을 URL
      - parameter completeHandler: func -     완료(에러포함) 시 받을 핸들러 모델을 돌려줌
@@ -73,10 +75,10 @@ public class SCOOP: NSObject {
     
     /**
      다운로드를 시작(재개)함
-        1. 이어받을 데이터가 있는지 확인
-        2. 로컬에 캐싱된 데이터가 있는지 확인한다( useCaching 의 설정에따라 동작한다 )
-        3. url.path로 identify를 백그라운드 세션설정을 생성하고 다운로드를 진행한다
-        MEMO : downloadTask(with: {}, completionHandler: {} ) 사용 시 "Completion handler blocks are not supported in background sessions. Use a delegate instead" 에러 발생
+     1. 이어받을 데이터가 있는지 확인
+     2. 로컬에 캐싱된 데이터가 있는지 확인한다( useCaching 의 설정에따라 동작한다 )
+     3. url.path로 identify를 백그라운드 세션설정을 생성하고 다운로드를 진행한다
+     MEMO : downloadTask(with: {}, completionHandler: {} ) 사용 시 "Completion handler blocks are not supported in background sessions. Use a delegate instead" 에러 발생
      */
     public func resume() {
         
@@ -115,8 +117,8 @@ public class SCOOP: NSObject {
         
         task?.cancel { resumeDataOrNil in
             guard let resumeData = resumeDataOrNil else {
-              print("Download cannot be resumed.")
-              return
+                print("Download cannot be resumed.")
+                return
             }
             self.isDownloading = false
             self.resumeData = resumeData
@@ -124,6 +126,22 @@ public class SCOOP: NSObject {
             self.completeHandler?(self)
         }
     }
+    /**
+     다운로드된 파일 중 압축 파일을 압축해제
+     */
+    public func unzip(unzipURL: URL, moveURL: URL) {
+        let success = SSZipArchive.unzipFile(atPath: unzipURL.path, toDestination: moveURL.path, overwrite: false, password: nil, progressHandler: unzipProgressHandler, completionHandler: unzipCompletionHandler)
+        
+        if success {
+            result = .UNZIPPED
+            self.savedURL = moveURL
+            DispatchQueue.main.async {
+                self.completeHandler?(self)
+            }
+            remove(at: unzipURL)
+        }
+    }
+    
 }
 
 
@@ -131,7 +149,7 @@ public class SCOOP: NSObject {
 extension SCOOP: URLSessionDownloadDelegate, Filesable {
     
     /**
-        다운로드가 완료되었을때, 임시파일상태이며 이곳에서 파일을 복사, 이동 하지 않으면 삭제됨
+     다운로드가 완료되었을때, 임시파일상태이며 이곳에서 파일을 복사, 이동 하지 않으면 삭제됨
      */
     public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         print("didFinishDownloadingTo")
@@ -155,6 +173,7 @@ extension SCOOP: URLSessionDownloadDelegate, Filesable {
     }
     
     /**
+     에러가 없을시 다운로드로 완료, 에러가 있을시 에러 || 다운로드 완료된 파일 중 압축 파일 확인
      */
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         print("didCompleteWithError")
@@ -172,6 +191,29 @@ extension SCOOP: URLSessionDownloadDelegate, Filesable {
         DispatchQueue.main.async {
             self.completeHandler?(self)
         }
+        //savedURL 참조해서 압축해제 타입이면 해제한다 ? 리턴
+        // URL pathExtension이 zip일 경우만 자동 압축해제한다.
+        guard let fileURL = savedURL, fileURL.pathExtension == "zip" else { return  }
+        
+        // 압축해제할때 이미 해제된폴더가 있는지 확인하고 압축해제 진행 처리
+        let writeURL = fileURL.deletingPathExtension()
+        if !fileExists(at: writeURL) {
+            do {
+                if writeURL.type == .not {
+                    try FileManager.default.createDirectory(at: writeURL, withIntermediateDirectories: true, attributes: nil)
+                }
+            } catch let error {
+                print("Could not copy file to disk: \(error.localizedDescription)")
+            }
+            
+            result = .UNZIPPING
+            DispatchQueue.main.async {
+                self.completeHandler?(self)
+            }
+            
+            unzip(unzipURL: fileURL, moveURL: writeURL)
+        }
+        
     }
     
     public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
@@ -181,5 +223,22 @@ extension SCOOP: URLSessionDownloadDelegate, Filesable {
         DispatchQueue.main.async {
             self.progressHandler?(self)
         }
+    }
+    /**
+     압축해제 진행 상황 확인할 수 있있는  handler
+     */
+    internal func unzipProgressHandler(target: String, info: unz_file_info, current: Int, total: Int){
+        let progress = Float(current) / Float (total)
+        self.progress = progress
+        DispatchQueue.main.async {
+            self.progressHandler?(self)
+        }
+    }
+    
+    /**
+     압축해제 후 에러 인지 성공인지 알려주는 handler
+     */
+    internal func unzipCompletionHandler(targetPath:String, sucess:Bool, error:Error?) {
+        print("[ ERROR ] - \(String(describing: error))")
     }
 }
