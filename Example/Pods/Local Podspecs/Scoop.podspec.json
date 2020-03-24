@@ -18,5 +18,12 @@
   "platforms": {
     "ios": "11.0"
   },
-  "source_files": "Scoop/Classes/**/*"
+  "source_files": "Scoop/Classes/**/*",
+  "ios": {
+    "dependencies": {
+      "SSZipArchive": [
+
+      ]
+    }
+  }
 }
