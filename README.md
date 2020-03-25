@@ -1,6 +1,9 @@
 # Scoop⛏
 Scoop는 심플하게 만든 다운로드 라이브러리입니다. 다운받은 파일 중 압축 해제 가능한 파일 경우 자동적으로 압축 해제합니다.   
-Scoop is simply made for downloading files. And the downloaded files that can be unzip will be automatically unzipped. 
+Swift 규격에 최대한 맞추었으나 수정해야할 부분이 있있으면 push request!   
+   
+Scoop is simply made for downloading files. And the downloaded files that can be unzip will be automatically unzipped.   
+If there are any code that need to be fixed cause of the wrong Swift style, let us know!
 ***
 
 ## Feature
