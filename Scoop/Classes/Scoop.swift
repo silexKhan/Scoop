@@ -1,5 +1,5 @@
 //
-//  DOWNLOAD.swift
+//  Scoop.swift
 //  Pods
 //
 //  Created by Kyu Suk Ahn on 2020/01/28.
@@ -8,15 +8,15 @@
 import Foundation
 import SSZipArchive
 
-public enum RESULT {
+public enum Result {
     
-    case CACHED
-    case PAUSED
-    case DOWNLOADING
-    case DOWNLOADED
-    case UNZIPPED
-    case UNZIPPING
-    case ERROR
+    case cached
+    case paused
+    case downloading
+    case downloaded
+    case unzipping
+    case unzipped
+    case error
 }
 
 
@@ -32,15 +32,15 @@ public enum RESULT {
  download.resume()
  
  */
-public typealias SCOOP_HANDLER = (SCOOP) -> Void
+public typealias ScoopHandler = (Scoop) -> Void
 
-public class SCOOP: NSObject {    
+public class Scoop: NSObject {
     
     //필수 맴버
     public var connectURL: URL                   //다운로드 연결할 URL
     public var useCaching: Bool = true          //default : true - true : 캐싱사용, false : fourced download
-    public var progressHandler: SCOOP_HANDLER?
-    public var completeHandler: SCOOP_HANDLER?
+    public var progressHandler: ScoopHandler?
+    public var completeHandler: ScoopHandler?
     
     //정보저장
     public var identify: String = "SCOOP"                //task 네임
@@ -54,7 +54,7 @@ public class SCOOP: NSObject {
     
     
     //결과/** response 정보 */
-    public var result: RESULT = .DOWNLOADING
+    public var result: Result = .downloading
     public var error: Error?
     public var response: HTTPURLResponse?
     
@@ -64,7 +64,7 @@ public class SCOOP: NSObject {
      - parameter connectURL: 다운로드 받을 URL
      - parameter completeHandler: func -     완료(에러포함) 시 받을 핸들러 모델을 돌려줌
      */
-    public init(connectURL: URL, useCaching:Bool = true, progressHandler: SCOOP_HANDLER? = nil, completeHandler: SCOOP_HANDLER? = nil) {
+    public init(connectURL: URL, useCaching: Bool = true, progressHandler: ScoopHandler? = nil, completeHandler: ScoopHandler? = nil) {
         
         self.connectURL = connectURL
         self.identify = connectURL.path
@@ -95,7 +95,7 @@ public class SCOOP: NSObject {
             //지정된 위치에서 저장되는 규칙에 따라 저장된 파일이 있는지 체크한다
             //저장된 파일이 있다면 다운로드를 받지않고 로컬의 경로를 업데이트하고 SCOOP의 완료모델을 반환한다
             self.savedURL = analogyCachingURL
-            self.result = .CACHED
+            self.result = .cached
             DispatchQueue.main.async {
                 self.completeHandler?(self)
             }
@@ -122,7 +122,7 @@ public class SCOOP: NSObject {
             }
             self.isDownloading = false
             self.resumeData = resumeData
-            self.result = .PAUSED
+            self.result = .paused
             self.completeHandler?(self)
         }
     }
@@ -133,7 +133,7 @@ public class SCOOP: NSObject {
         let success = SSZipArchive.unzipFile(atPath: unzipURL.path, toDestination: moveURL.path, overwrite: false, password: nil, progressHandler: unzipProgressHandler, completionHandler: unzipCompletionHandler)
         
         if success {
-            result = .UNZIPPED
+            result = .unzipped
             self.savedURL = moveURL
             DispatchQueue.main.async {
                 self.completeHandler?(self)
@@ -146,7 +146,7 @@ public class SCOOP: NSObject {
 
 
 
-extension SCOOP: URLSessionDownloadDelegate, Filesable {
+extension Scoop: URLSessionDownloadDelegate, Filesable {
     
     /**
      다운로드가 완료되었을때, 임시파일상태이며 이곳에서 파일을 복사, 이동 하지 않으면 삭제됨
@@ -161,7 +161,7 @@ extension SCOOP: URLSessionDownloadDelegate, Filesable {
                 if self.fileExists(at: writeURL) {
                     self.savedURL = writeURL
                 }
-                self.result = .ERROR
+                self.result = .error
                 DispatchQueue.main.async {
                     self.completeHandler?(self)
                 }
@@ -180,14 +180,14 @@ extension SCOOP: URLSessionDownloadDelegate, Filesable {
         guard let httpResponse = task.response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
             print("------ HTTP Request Error : \(String(describing: error?.localizedDescription))")
             self.error = error
-            self.result = .ERROR
+            self.result = .error
             DispatchQueue.main.async {
                 self.completeHandler?(self)
             }
             return
         }
         response = httpResponse
-        result = .DOWNLOADED
+        result = .downloaded
         DispatchQueue.main.async {
             self.completeHandler?(self)
         }
@@ -206,7 +206,7 @@ extension SCOOP: URLSessionDownloadDelegate, Filesable {
                 print("Could not copy file to disk: \(error.localizedDescription)")
             }
             
-            result = .UNZIPPING
+            result = .unzipping
             DispatchQueue.main.async {
                 self.completeHandler?(self)
             }
@@ -238,7 +238,7 @@ extension SCOOP: URLSessionDownloadDelegate, Filesable {
     /**
      압축해제 후 에러 인지 성공인지 알려주는 handler
      */
-    internal func unzipCompletionHandler(targetPath:String, sucess:Bool, error:Error?) {
+    internal func unzipCompletionHandler(targetPath: String, sucess: Bool, error: Error?) {
         print("[ ERROR ] - \(String(describing: error))")
     }
 }

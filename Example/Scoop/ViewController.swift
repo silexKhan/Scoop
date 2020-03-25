@@ -14,24 +14,24 @@ class DownloadTableViewCell: UITableViewCell {
     @IBOutlet weak var title: UILabel!
     @IBOutlet weak var descript: UILabel!
     @IBOutlet weak var progress: UIProgressView!
-    var data:SCOOP?
+    var data: Scoop?
     
-    internal func updateState(model: SCOOP) {
+    internal func updateState(model: Scoop) {
         
         var stateDescription: String = ""
         switch model.result {
-        case .CACHED :          stateDescription = "이미 저장된 파일이 존재합니다."
-        case .DOWNLOADING :     stateDescription = "다운로드 중입니다."
-        case .DOWNLOADED :      stateDescription = "다운로드가 완료되었습니다."
-        case .PAUSED :          stateDescription = "정지합니다."
-        case .UNZIPPING:        stateDescription = "압축 해제 중입니다."
-        case .UNZIPPED :        stateDescription = "압축 해제 되었습니다."
-        case .ERROR :           stateDescription = "ERROR - \(model.error?.localizedDescription ?? "")"
+        case .cached :          stateDescription = "이미 저장된 파일이 존재합니다."
+        case .downloading :     stateDescription = "다운로드 중입니다."
+        case .downloaded :      stateDescription = "다운로드가 완료되었습니다."
+        case .paused :          stateDescription = "정지합니다."
+        case .unzipping:        stateDescription = "압축 해제 중입니다."
+        case .unzipped :        stateDescription = "압축 해제 되었습니다."
+        case .error :           stateDescription = "ERROR - \(model.error?.localizedDescription ?? "")"
         }
         descript.text = stateDescription
     }
     
-    internal func updateModel(model: SCOOP) {
+    internal func updateModel(model: Scoop) {
         
         guard data?.identify != model.identify else { return }
         data = model
@@ -57,7 +57,7 @@ class ViewController: UIViewController, Filesable {
     
     lazy var searchController = UISearchController(searchResultsController: nil)
     
-    var downloads: [SCOOP] = []
+    var downloads: [Scoop] = []
     
     var dummyIndex: Int = 0
     let dummy: [String] = ["https://www.ncdc.noaa.gov/orders/qclcd/QCLCD200706.zip","https://homebrew.bintray.com/bottles/ffmpeg-4.2.2_1.catalina.bottle.tar.gz", "https://www.videoproc.com/download/videoproc-4k.dmg", "https://homebrew.bintray.com/bottles/ffmpeg-4.2.2_1.high_sierra.bottle.tar.gz"]
@@ -87,7 +87,7 @@ class ViewController: UIViewController, Filesable {
         
         dummyIndex = dummyIndex >= dummy.count ? 0 : dummyIndex
         if let url = URL(string: dummy[dummyIndex]) {
-            downloads.append(SCOOP(connectURL: url))
+            downloads.append(Scoop(connectURL: url))
         }
         tableview.reloadData()
         dummyIndex += 1
