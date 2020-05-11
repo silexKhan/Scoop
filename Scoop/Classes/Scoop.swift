@@ -51,6 +51,7 @@ public class Scoop: NSObject {
     public var resumeData: Data?                //다운로드시 생성된 Data를 저장함, 서버가 지원하면 resume가능
     public var progress: Float = 0.0            //프로그래스 0.0 ~ 1.0
     public var savedURL: URL?                   //완료되어 저장된 위치<완료되면 채워야함>
+    public var fileSize: String?                //파일사이즈 저장
     
     
     //결과/** response 정보 */
@@ -161,7 +162,11 @@ extension Scoop: URLSessionDownloadDelegate, Filesable {
     public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         print("didFinishDownloadingTo")
         //다운로드완료 로컬에 파일 write코드 추가
-        guard let sourceURL = downloadTask.originalRequest?.url, let writeURL = writeURL(basePath: getBaseDownloadURL(for: .documents, createFolder: "scoop"), requestURL: sourceURL) else { return }
+        guard let httpResponse = downloadTask.response as? HTTPURLResponse,
+            let contentsLength = httpResponse.allHeaderFields["Content-Length"] as? String,
+            contentsLength > "0",
+            let sourceURL = downloadTask.originalRequest?.url,
+            let writeURL = writeURL(basePath: getBaseDownloadURL(for: .documents, createFolder: "scoop"), requestURL: sourceURL) else { return }
         move(at: location, to: writeURL) { (sucess, error) in
             guard sucess else {
                 self.error = error
@@ -184,13 +189,17 @@ extension Scoop: URLSessionDownloadDelegate, Filesable {
      */
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         
-        guard let httpResponse = task.response as? HTTPURLResponse,
-            (200...299).contains(httpResponse.statusCode),
-            let contentsLength = httpResponse.allHeaderFields["Content-Length"] as? String,
-            contentsLength > "0" else {
+        let httpResponse = task.response as? HTTPURLResponse
+        let contentLength = httpResponse?.allHeaderFields["Content-Length"] as? String
+        guard let statusCode = httpResponse?.statusCode, (200...299).contains(statusCode), let contentsLength = contentLength, contentsLength > "0" else {
             print("------ HTTP Request Error : \(String(describing: error?.localizedDescription))")
+            self.fileSize = contentLength
             self.error = error
             self.result = .error
+            //파일사이즈가0이면 생성된 파일을 삭제한다
+            if let hasSavedURL = savedURL {
+                self.remove(at: hasSavedURL)
+            }
             DispatchQueue.main.async {
                 self.completeHandler?(self)
             }

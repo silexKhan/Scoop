@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'Scoop'
-  s.version          = '1.0.1'
+  s.version          = '1.0.2'
   s.summary          = 'Scoop is simply made for downloading files and automatically unzip downloaded files.'
 
 # This description is used to generate tags and improve search results.

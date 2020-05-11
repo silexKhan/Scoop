@@ -45,7 +45,7 @@ class DownloadTableViewCell: UITableViewCell {
         model.completeHandler = { result in
             self.updateState(model: result)
             //self.backgroundColor = .cyan
-            print("completeHandler saved - ", result.savedURL?.path ?? "")
+            print("completeHandler saved - ", result.savedURL?.path ?? result.fileSize)
         }
         model.resume()
     }
@@ -123,6 +123,8 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
 extension ViewController: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        print(searchBar.text)
+        guard let connectURL = URL(string: searchBar.text ?? "") else { return }
+        downloads.append(Scoop(connectURL: connectURL))
+        self.tableview.reloadData()
     }
 }
