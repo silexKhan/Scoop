@@ -130,15 +130,22 @@ public class Scoop: NSObject {
      다운로드된 파일 중 압축 파일을 압축해제
      */
     public func unzip(unzipURL: URL, moveURL: URL) {
-        let success = SSZipArchive.unzipFile(atPath: unzipURL.path, toDestination: moveURL.path, overwrite: false, password: nil, progressHandler: unzipProgressHandler, completionHandler: unzipCompletionHandler)
         
-        if success {
-            result = .unzipped
-            self.savedURL = moveURL
+        _ = SSZipArchive.unzipFile(atPath: unzipURL.path, toDestination: moveURL.path, overwrite: false, password: nil, progressHandler: { (target, info, current, total) in
+            let progress = Float(current) / Float (total)
+            self.progress = progress
             DispatchQueue.main.async {
-                self.completeHandler?(self)
+                self.progressHandler?(self)
             }
-            remove(at: unzipURL)
+        }) { (path, sucess, error) in
+            if sucess {
+                self.result = .unzipped
+                self.savedURL = moveURL
+                DispatchQueue.main.async {
+                    self.completeHandler?(self)
+                }
+                self.remove(at: unzipURL)
+            }
         }
     }
     
@@ -176,8 +183,11 @@ extension Scoop: URLSessionDownloadDelegate, Filesable {
      에러가 없을시 다운로드로 완료, 에러가 있을시 에러 || 다운로드 완료된 파일 중 압축 파일 확인
      */
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        print("didCompleteWithError")
-        guard let httpResponse = task.response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+        
+        guard let httpResponse = task.response as? HTTPURLResponse,
+            (200...299).contains(httpResponse.statusCode),
+            let contentsLength = httpResponse.allHeaderFields["Content-Length"] as? String,
+            contentsLength > "0" else {
             print("------ HTTP Request Error : \(String(describing: error?.localizedDescription))")
             self.error = error
             self.result = .error
@@ -223,22 +233,5 @@ extension Scoop: URLSessionDownloadDelegate, Filesable {
         DispatchQueue.main.async {
             self.progressHandler?(self)
         }
-    }
-    /**
-     압축해제 진행 상황 확인할 수 있있는  handler
-     */
-    internal func unzipProgressHandler(target: String, info: unz_file_info, current: Int, total: Int){
-        let progress = Float(current) / Float (total)
-        self.progress = progress
-        DispatchQueue.main.async {
-            self.progressHandler?(self)
-        }
-    }
-    
-    /**
-     압축해제 후 에러 인지 성공인지 알려주는 handler
-     */
-    internal func unzipCompletionHandler(targetPath: String, sucess: Bool, error: Error?) {
-        print("[ ERROR ] - \(String(describing: error))")
     }
 }
