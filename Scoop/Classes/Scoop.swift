@@ -39,6 +39,7 @@ public class Scoop: NSObject {
     //필수 맴버
     public var connectURL: URL                   //다운로드 연결할 URL
     public var useCaching: Bool = true          //default : true - true : 캐싱사용, false : fourced download
+    public var autoUnZip: Bool = true
     public var progressHandler: ScoopHandler?
     public var completeHandler: ScoopHandler?
     
@@ -65,11 +66,12 @@ public class Scoop: NSObject {
      - parameter connectURL: 다운로드 받을 URL
      - parameter completeHandler: func -     완료(에러포함) 시 받을 핸들러 모델을 돌려줌
      */
-    public init(connectURL: URL, useCaching: Bool = true, progressHandler: ScoopHandler? = nil, completeHandler: ScoopHandler? = nil) {
+    public init(connectURL: URL, useCaching: Bool = true, autoUnZip: Bool = true, progressHandler: ScoopHandler? = nil, completeHandler: ScoopHandler? = nil) {
         
         self.connectURL = connectURL
         self.identify = connectURL.path
         self.useCaching = useCaching
+        self.autoUnZip = autoUnZip
         self.progressHandler = progressHandler
         self.completeHandler = completeHandler
     }
@@ -211,8 +213,8 @@ extension Scoop: URLSessionDownloadDelegate, Filesable {
             self.completeHandler?(self)
         }
         //savedURL 참조해서 압축해제 타입이면 해제한다 ? 리턴
-        // URL pathExtension이 zip일 경우만 자동 압축해제한다.
-        guard let fileURL = savedURL, fileURL.pathExtension == "zip" else { return  }
+        //autoUnZip == true이고 URL pathExtension이 zip일 경우만 자동 압축해제한다.
+        guard autoUnZip, let fileURL = savedURL, fileURL.pathExtension == "zip" else { return  }
         
         // 압축해제할때 이미 해제된폴더가 있는지 확인하고 압축해제 진행 처리
         let writeURL = fileURL.deletingPathExtension()
