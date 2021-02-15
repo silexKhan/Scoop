@@ -1,23 +1,25 @@
 {
   "name": "Scoop",
-  "version": "0.1.0",
-  "summary": "A short description of Scoop.",
-  "description": "TODO: Add long description of the pod here.",
+  "version": "1.0.4",
+  "summary": "Scoop is simply made for downloading files and automatically unzip downloaded files.",
+  "description": "Scoop is simply made for downloading files. And the downloaded files that can be unzip will be automatically unzipped.",
   "homepage": "https://github.com/silexKhan/Scoop",
   "license": {
     "type": "MIT",
     "file": "LICENSE"
   },
   "authors": {
-    "silexKhan": "silex@golfzon.com"
+    "silexKhan": "realsilex@naver.com",
+    "JakyungYoon": "jakyung8@naver.com"
   },
   "source": {
     "git": "https://github.com/silexKhan/Scoop.git",
-    "tag": "0.1.0"
+    "tag": "1.0.4"
   },
   "platforms": {
     "ios": "11.0"
   },
+  "swift_versions": "5.0",
   "source_files": "Scoop/Classes/**/*",
   "ios": {
     "dependencies": {
@@ -25,5 +27,6 @@
 
       ]
     }
-  }
+  },
+  "swift_version": "5.0"
 }
