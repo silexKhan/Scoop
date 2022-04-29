@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SSZipArchive
+
 
 public enum Result {
     
@@ -39,7 +39,6 @@ public class Scoop: NSObject {
     //필수 맴버
     public var connectURL: URL                   //다운로드 연결할 URL
     public var useCaching: Bool = true          //default : true - true : 캐싱사용, false : fourced download
-    public var autoUnZip: Bool = true
     public var progressHandler: ScoopHandler?
     public var completeHandler: ScoopHandler?
     
@@ -66,12 +65,11 @@ public class Scoop: NSObject {
      - parameter connectURL: 다운로드 받을 URL
      - parameter completeHandler: func -     완료(에러포함) 시 받을 핸들러 모델을 돌려줌
      */
-    public init(connectURL: URL, useCaching: Bool = true, autoUnZip: Bool = true, progressHandler: ScoopHandler? = nil, completeHandler: ScoopHandler? = nil) {
+    public init(connectURL: URL, useCaching: Bool = true, progressHandler: ScoopHandler? = nil, completeHandler: ScoopHandler? = nil) {
         
         self.connectURL = connectURL
         self.identify = connectURL.path
         self.useCaching = useCaching
-        self.autoUnZip = autoUnZip
         self.progressHandler = progressHandler
         self.completeHandler = completeHandler
     }
@@ -129,6 +127,8 @@ public class Scoop: NSObject {
             self.completeHandler?(self)
         }
     }
+    
+    /*
     /**
      다운로드된 파일 중 압축 파일을 압축해제
      */
@@ -151,7 +151,7 @@ public class Scoop: NSObject {
             }
         }
     }
-    
+    */
 }
 
 
@@ -212,6 +212,8 @@ extension Scoop: URLSessionDownloadDelegate, Filesable {
         DispatchQueue.main.async {
             self.completeHandler?(self)
         }
+        
+        /*
         //savedURL 참조해서 압축해제 타입이면 해제한다 ? 리턴
         //autoUnZip == true이고 URL pathExtension이 zip일 경우만 자동 압축해제한다.
         guard autoUnZip, let fileURL = savedURL, fileURL.pathExtension == "zip" else { return  }
@@ -234,6 +236,7 @@ extension Scoop: URLSessionDownloadDelegate, Filesable {
             
             unzip(unzipURL: fileURL, moveURL: writeURL)
         }
+        */
         
     }
     

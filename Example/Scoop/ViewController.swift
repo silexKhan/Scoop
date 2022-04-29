@@ -60,7 +60,7 @@ class ViewController: UIViewController, Filesable {
     var downloads: [Scoop] = []
     
     var dummyIndex: Int = 0
-    let dummy: [String] = ["https://www.ncdc.noaa.gov/orders/qclcd/QCLCD200706.zip","https://homebrew.bintray.com/bottles/ffmpeg-4.2.2_1.catalina.bottle.tar.gz", "https://www.videoproc.com/download/videoproc-4k.dmg", "https://homebrew.bintray.com/bottles/ffmpeg-4.2.2_1.high_sierra.bottle.tar.gz"]
+    let dummy: [String] = ["https://www.videoproc.com/download/videoproc-4k.dmg", "https://www.ncdc.noaa.gov/orders/qclcd/QCLCD200706.zip", "https://www.videoproc.com/download/videoproc-4k.dmg"]
 
     override func viewDidLoad() {
         super.viewDidLoad()

@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'Scoop'
-  s.version          = '1.0.4'
+  s.version          = '1.0.5'
   s.summary          = 'Scoop is simply made for downloading files and automatically unzip downloaded files.'
 
 # This description is used to generate tags and improve search results.
@@ -40,5 +40,5 @@ Pod::Spec.new do |s|
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
   # s.dependency 'AFNetworking', '~> 2.3'
-  s.ios.dependency 'SSZipArchive'
+  #s.ios.dependency 'SSZipArchive'
 end
