@@ -1,23 +1,16 @@
 PODS:
-  - Scoop (1.0.4):
-    - SSZipArchive
-  - SSZipArchive (2.2.3)
+  - Scoop (1.0.5)
 
 DEPENDENCIES:
   - Scoop (from `../`)
-
-SPEC REPOS:
-  trunk:
-    - SSZipArchive
 
 EXTERNAL SOURCES:
   Scoop:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Scoop: 9b136715088fe02acc0390dd27d154c9ad2c8cf4
-  SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
+  Scoop: eaf55e994387f41eecbf92c6547a574f318245a5
 
 PODFILE CHECKSUM: 738cf334331dc664119bd68ad323def2623252f7
 
-COCOAPODS: 1.10.1
+COCOAPODS: 1.11.3

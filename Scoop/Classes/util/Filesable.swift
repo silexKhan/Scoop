@@ -102,15 +102,15 @@ public extension Filesable {
     }
     
     /**
-     지정된 경로에 다운로드한 파일의 last path component 로 파일이 저장될 경로와 파일명 확장자까지 만듬
+     지정된 경로에 다운로드한 파일의 path components로 파일이 저장될 경로와 파일명 확장자까지 만듬 (pathComponents으로 하는 이유는 lastComponents 이름은 같고 full path 다른 경우를 나누기 위해서)
      requestURL에 파일명 또는 확장자가 포함되지 않았다면 추가해줘야함
      - Parameter basePath : 베이스가 되는 경로명
      - Parameter requestURL : 다운로드한 요청한 URL
      */
     func writeURL(basePath: URL?, requestURL: URL?) -> URL? {
         
-        guard let hasBasePath = basePath, let hasRequestURL = requestURL else { return nil }
-        return hasBasePath.appendingPathComponent(hasRequestURL.lastPathComponent)
+        guard let hasBasePath = basePath, let hasRequestURL = requestURL?.pathComponents.joined(separator: "") else { return nil }
+        return hasBasePath.appendingPathComponent(hasRequestURL)
     }
     
     /**
