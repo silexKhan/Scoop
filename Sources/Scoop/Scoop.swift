@@ -1,251 +1,212 @@
 //
 //  Scoop.swift
-//  Pods
+//  Scoop
 //
-//  Created by Kyu Suk Ahn on 2020/01/28.
+//  Created by Kyu Suk Ahn on 2025/06/23.
 //
 
 import Foundation
+import Combine
 
+/*
+ Scoop
 
-public enum Result {
-    
-    case cached
-    case paused
-    case downloading
-    case downloaded
-    case unzipping
-    case unzipped
-    case error
-}
+ 파일 다운로드를 Combine 및 async/await 기반으로 처리하는 유틸리티 클래스입니다.
 
+ - Description:
+   - 파일 다운로드를 Combine 퍼블리셔 또는 async 방식으로 처리
+   - 일시정지(pause), 이어받기(resume) 기능 지원
+   - 서버가 `Accept-Ranges: bytes`를 응답하는지 자동 체크하여 이어받기 가능 여부 판단
+   - 디스크에 resumeData를 저장하여 앱 재실행 후에도 이어받기 가능
 
-/**
- -  Note: Example Code
- 
- guard let connectURL = URL(string: "https://vt.tumblr.com/tumblr_o600t8hzf51qcbnq0_480.mp4") else { return }
- let download = SCOOP(identify: "Scoop", connectURL: connectURL, downloadPath: "scoop", progressHandler: { (progress) in
- print("progress - ", progress.progress)
- }) { (sucess) in
- print("sucess - ", sucess.progress)
- }
- download.resume()
- 
+ - Usage Example:
+ ```swift
+ let scoop = Scoop()
+ scoop.resume(url: downloadURL)
  */
-public typealias ScoopHandler = (Scoop) -> Void
+public final class Scoop: NSObject, ObservableObject {
 
-public class Scoop: NSObject {
-    
-    //필수 맴버
-    public var connectURL: URL                   //다운로드 연결할 URL
-    public var useCaching: Bool = true          //default : true - true : 캐싱사용, false : fourced download
-    public var progressHandler: ScoopHandler?
-    public var completeHandler: ScoopHandler?
-    
-    //정보저장
-    public var identify: String = "SCOOP"                //task 네임
-    public var session: URLSession?
-    public var task: URLSessionDownloadTask?
-    public var isDownloading = false            //작업상태
-    public var downloaded = false               //다운로드 완료되면 true로 변경됨
-    public var resumeData: Data?                //다운로드시 생성된 Data를 저장함, 서버가 지원하면 resume가능
-    public var progress: Float = 0.0            //프로그래스 0.0 ~ 1.0
-    public var savedURL: URL?                   //완료되어 저장된 위치<완료되면 채워야함>
-    public var fileSize: String?                //파일사이즈 저장
-    
-    
-    //결과/** response 정보 */
-    public var result: Result = .downloading
-    public var error: Error?
-    public var response: HTTPURLResponse?
-    
-    /**
-     초기화 필요한게 많다
-     - parameter identify:   task로 생성될 이름
-     - parameter connectURL: 다운로드 받을 URL
-     - parameter completeHandler: func -     완료(에러포함) 시 받을 핸들러 모델을 돌려줌
-     */
-    public init(connectURL: URL, useCaching: Bool = true, progressHandler: ScoopHandler? = nil, completeHandler: ScoopHandler? = nil) {
-        
-        self.connectURL = connectURL
-        self.identify = connectURL.path
-        self.useCaching = useCaching
-        self.progressHandler = progressHandler
-        self.completeHandler = completeHandler
-    }
-    
-    /**
-     다운로드를 시작(재개)함
-     1. 이어받을 데이터가 있는지 확인
-     2. 로컬에 캐싱된 데이터가 있는지 확인한다( useCaching 의 설정에따라 동작한다 )
-     3. url.path로 identify를 백그라운드 세션설정을 생성하고 다운로드를 진행한다
-     MEMO : downloadTask(with: {}, completionHandler: {} ) 사용 시 "Completion handler blocks are not supported in background sessions. Use a delegate instead" 에러 발생
-     */
-    public func resume() {
-        
-        guard resumeData == nil else {
-            //resumeData 데이터가 있으면 재개함
-            task = session?.downloadTask(withResumeData: resumeData!)
-            task?.resume()
-            isDownloading = true
-            return
-        }
-        //로컬에 캐싱되어 있는지 확인한다. 파일이 존재하지 않을때 다운로드 받는다
-        let analogyCachingURL = writeURL(basePath: getBaseDownloadURL(), requestURL: connectURL)
-        guard useCaching, let hasAnalogyCachingURL = analogyCachingURL, !fileExists(at: hasAnalogyCachingURL) else {
-            //지정된 위치에서 저장되는 규칙에 따라 저장된 파일이 있는지 체크한다
-            //저장된 파일이 있다면 다운로드를 받지않고 로컬의 경로를 업데이트하고 SCOOP의 완료모델을 반환한다
-            self.savedURL = analogyCachingURL
-            self.result = .cached
+    // MARK: - Public Publisher
+
+    public let progress = PassthroughSubject<Double, Never>()
+    public let completed = PassthroughSubject<URL, Error>()
+
+    // MARK: - Private
+
+    private var continuation: CheckedContinuation<URL, Error>?
+    private lazy var session: URLSession = {
+        let config = URLSessionConfiguration.default
+        return URLSession(configuration: config, delegate: self, delegateQueue: .main)
+    }()
+
+    private var downloadTask: URLSessionDownloadTask?
+
+    private let resumeDataCachePath: URL = {
+        let directory = FileManager.default.temporaryDirectory
+        return directory.appendingPathComponent("resume_data.cache")
+    }()
+
+
+    /// 다운로드 시작 (Combine 방식)
+    ///
+    /// - Parameter url: 다운로드할 원격 파일 URL
+    /// - Note: 서버의 resume 지원 여부를 판단하여 resumeData 기반 이어받기를 시도하거나 새로 다운로드합니다.
+    public func resume(url: URL) {
+        checkResumableSupport(for: url) { [weak self] isResumable in
+            guard let self = self else { return }
+
             DispatchQueue.main.async {
-                self.completeHandler?(self)
+                if isResumable, let savedResumeData = try? Data(contentsOf: self.resumeDataCachePath) {
+                    print("[Scoop] resumeData 존재 + 서버 지원 → 이어받기 시도")
+                    self.downloadTask = self.session.downloadTask(withResumeData: savedResumeData)
+                } else {
+                    print("[Scoop] resume 불가 또는 resumeData 없음 → 새로 다운로드 시작")
+                    self.downloadTask = self.session.downloadTask(with: url)
+                }
+
+                print("[Scoop] downloadTask resume 시작")
+                self.downloadTask?.resume()
             }
-            return
         }
-        
-        //resumeData 없다면 처음부터 다운로드
-        let configuration = URLSessionConfiguration.background(withIdentifier: identify)
-        session = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
-        task = session?.downloadTask(with: connectURL)
-        task?.resume()
-        isDownloading = true
     }
-    
-    /**
-     다운로드 일시중지
-     */
+
+    /// 다운로드 일시정지 및 resumeData 저장
+    ///
+    /// - Note: 현재 다운로드 중인 작업을 일시정지하고, resumeData를 디스크에 저장합니다.
     public func pause() {
-        
-        task?.cancel { resumeDataOrNil in
-            guard let resumeData = resumeDataOrNil else {
-                print("Download cannot be resumed.")
+        downloadTask?.cancel(byProducingResumeData: { [weak self] data in
+            guard let self = self, let data = data else {
+                print("[Scoop] pause 실패 – resumeData 없음")
                 return
             }
-            self.isDownloading = false
-            self.resumeData = resumeData
-            self.result = .paused
-            self.completeHandler?(self)
+            do {
+                try data.write(to: self.resumeDataCachePath)
+                print("[Scoop] resumeData 저장 완료: \(self.resumeDataCachePath.lastPathComponent)")
+            } catch {
+                print("[Scoop] resumeData 저장 실패: \(error.localizedDescription)")
+            }
+        })
+    }
+
+    /// resumeData 캐시 파일 삭제
+    ///
+    /// - Note: resumeData 파일이 존재하는 경우 삭제하며, 이어받기 실패나 완료 시 호출됩니다.
+    private func clearResumeCacheIfNeeded() {
+        do {
+            try FileManager.default.removeItem(at: resumeDataCachePath)
+            print("[Scoop] resumeData 캐시 삭제됨")
+        } catch {
+            print("[Scoop] resumeData 캐시 삭제 실패: \(error.localizedDescription)")
         }
     }
+
     
-    /*
-    /**
-     다운로드된 파일 중 압축 파일을 압축해제
-     */
-    public func unzip(unzipURL: URL, moveURL: URL) {
-        
-        _ = SSZipArchive.unzipFile(atPath: unzipURL.path, toDestination: moveURL.path, overwrite: false, password: nil, progressHandler: { (target, info, current, total) in
-            let progress = Float(current) / Float (total)
-            self.progress = progress
-            DispatchQueue.main.async {
-                self.progressHandler?(self)
+    /// 서버의 resume 지원 여부 확인
+    ///
+    /// - Parameter url: 확인할 원격 파일 URL
+    /// - Parameter completion: `true`면 이어받기 가능, `false`면 불가능
+    /// - Note: HEAD 요청을 통해 `Accept-Ranges` 헤더가 "bytes"인지 확인합니다.
+    public func checkResumableSupport(for url: URL, completion: @escaping (Bool) -> Void) {
+        var request = URLRequest(url: url)
+        request.httpMethod = "HEAD"
+
+        URLSession.shared.dataTask(with: request) { _, response, _ in
+            guard let httpResponse = response as? HTTPURLResponse else {
+                completion(false)
+                return
             }
-        }) { (path, sucess, error) in
-            if sucess {
-                self.result = .unzipped
-                self.savedURL = moveURL
-                DispatchQueue.main.async {
-                    self.completeHandler?(self)
-                }
-                self.remove(at: unzipURL)
-            }
-        }
+
+            let acceptRanges = httpResponse.allHeaderFields["Accept-Ranges"] as? String ?? ""
+            let isResumable = acceptRanges.lowercased() == "bytes"
+            print("[Scoop] Accept-Ranges '\(acceptRanges)' → resume 가능 여부: \(isResumable)")
+            completion(isResumable)
+        }.resume()
     }
-    */
 }
 
+// MARK: - URLSessionDownloadDelegate
 
+extension Scoop: URLSessionDownloadDelegate {
 
-extension Scoop: URLSessionDownloadDelegate, Filesable {
-    
-    /**
-     다운로드가 완료되었을때, 임시파일상태이며 이곳에서 파일을 복사, 이동 하지 않으면 삭제됨
-     */
-    public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        print("didFinishDownloadingTo")
-        //다운로드완료 로컬에 파일 write코드 추가
-        guard let httpResponse = downloadTask.response as? HTTPURLResponse,
-            let contentsLength = httpResponse.allHeaderFields["Content-Length"] as? String,
-            contentsLength > "0",
-            let sourceURL = downloadTask.originalRequest?.url,
-            let writeURL = writeURL(basePath: getBaseDownloadURL(for: .documents, createFolder: "scoop"), requestURL: sourceURL) else { return }
-        move(at: location, to: writeURL) { (sucess, error) in
-            guard sucess else {
-                self.error = error
-                if self.fileExists(at: writeURL) {
-                    self.savedURL = writeURL
-                }
-                self.result = .error
-                DispatchQueue.main.async {
-                    self.completeHandler?(self)
-                }
-                return
+    /// 이어받기 시도 결과 처리
+    ///
+    /// - Parameters:
+    ///   - fileOffset: 이어받은 시작 바이트 오프셋
+    ///   - expectedTotalBytes: 전체 파일 크기
+    /// - Note: offset이 0이면서 statusCode가 200이면 resume 실패로 간주하여 resumeData를 삭제합니다.
+    public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask,
+                           didResumeAtOffset fileOffset: Int64,
+                           expectedTotalBytes: Int64) {
+        print("[Scoop] 이어받기 시도됨 → offset: \(fileOffset), expected: \(expectedTotalBytes)")
+
+        if let response = downloadTask.response as? HTTPURLResponse {
+            print("[Scoop] 서버 응답 상태 코드: \(response.statusCode)") // 206이어야 정상
+        }
+
+        if fileOffset == 0 {
+            if let httpResponse = downloadTask.response as? HTTPURLResponse,
+               httpResponse.statusCode == 200 {
+                print("[Scoop] 서버가 resume 요청을 무시하고 전체 파일 응답 → resume 불가")
             }
-            self.savedURL = writeURL
-            self.downloaded = sucess
+            print("[Scoop] 이어받기 실패로 판단됨 → resumeData 삭제")
+            clearResumeCacheIfNeeded()
         }
     }
     
-    /**
-     에러가 없을시 다운로드로 완료, 에러가 있을시 에러 || 다운로드 완료된 파일 중 압축 파일 확인
-     */
-    public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        
-        let httpResponse = task.response as? HTTPURLResponse
-        let contentLength = httpResponse?.allHeaderFields["Content-Length"] as? String
-        guard let statusCode = httpResponse?.statusCode, (200...299).contains(statusCode), let contentsLength = contentLength, contentsLength > "0" else {
-            print("------ HTTP Request Error : \(String(describing: error?.localizedDescription))")
-            self.fileSize = contentLength
-            self.error = error
-            self.result = .error
-            //파일사이즈가0이면 생성된 파일을 삭제한다
-            if let hasSavedURL = savedURL {
-                self.remove(at: hasSavedURL)
-            }
-            DispatchQueue.main.async {
-                self.completeHandler?(self)
-            }
-            return
-        }
-        response = httpResponse
-        result = .downloaded
-        DispatchQueue.main.async {
-            self.completeHandler?(self)
-        }
-        
-        /*
-        //savedURL 참조해서 압축해제 타입이면 해제한다 ? 리턴
-        //autoUnZip == true이고 URL pathExtension이 zip일 경우만 자동 압축해제한다.
-        guard autoUnZip, let fileURL = savedURL, fileURL.pathExtension == "zip" else { return  }
-        
-        // 압축해제할때 이미 해제된폴더가 있는지 확인하고 압축해제 진행 처리
-        let writeURL = fileURL.deletingPathExtension()
-        if !fileExists(at: writeURL) {
-            do {
-                if writeURL.type == .not {
-                    try FileManager.default.createDirectory(at: writeURL, withIntermediateDirectories: true, attributes: nil)
-                }
-            } catch let error {
-                print("Could not copy file to disk: \(error.localizedDescription)")
-            }
-            
-            result = .unzipping
-            DispatchQueue.main.async {
-                self.completeHandler?(self)
-            }
-            
-            unzip(unzipURL: fileURL, moveURL: writeURL)
-        }
-        */
-        
+    /// 다운로드 진행률 전송
+    ///
+    /// - Parameters:
+    ///   - bytesWritten: 새로 받은 바이트 수
+    ///   - totalBytesWritten: 지금까지 받은 총 바이트 수
+    ///   - totalBytesExpectedToWrite: 전체 파일 크기
+    /// - Note: 퍼센트 계산 후 `progress` 퍼블리셔로 전송
+    public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask,
+                           didWriteData bytesWritten: Int64,
+                           totalBytesWritten: Int64,
+                           totalBytesExpectedToWrite: Int64) {
+        guard totalBytesExpectedToWrite > 0 else { return }
+        let percent = Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)
+        progress.send(percent)
     }
-    
-    public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
+
+    /// 다운로드 완료 처리
+    ///
+    /// - Parameter location: 임시로 저장된 다운로드 파일 위치
+    /// - Note: Document 디렉토리로 이동 후 `completed` 퍼블리셔 또는 continuation 으로 알림
+    public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask,
+                           didFinishDownloadingTo location: URL) {
         
-        let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
-        self.progress = progress
-        DispatchQueue.main.async {
-            self.progressHandler?(self)
+        defer { clearResumeCacheIfNeeded()  }
+        
+        do {
+            let fileManager = FileManager.default
+            let folder = fileManager
+                .urls(for: .documentDirectory, in: .userDomainMask)
+                .first!
+                .appendingPathComponent("scoop", isDirectory: true)
+
+            if !fileManager.fileExists(atPath: folder.path) {
+                try fileManager.createDirectory(at: folder, withIntermediateDirectories: true, attributes: nil)
+            }
+
+            let originalFileName = downloadTask.originalRequest?.url?.lastPathComponent ?? UUID().uuidString
+            let finalURL = folder.appendingPathComponent(originalFileName)
+
+            if fileManager.fileExists(atPath: finalURL.path) {
+                try fileManager.removeItem(at: finalURL)
+            }
+
+            try fileManager.moveItem(at: location, to: finalURL)
+            print("[Scoop] 다운로드 완료 및 파일 이동 → \(finalURL.lastPathComponent)")
+            completed.send(finalURL)
+            continuation?.resume(returning: finalURL)
+            continuation = nil
+
+        } catch {
+            print("[Scoop] 파일 이동 실패: \(error.localizedDescription)")
+            completed.send(completion: .failure(error))
+            continuation?.resume(throwing: error)
+            continuation = nil
         }
     }
 }
