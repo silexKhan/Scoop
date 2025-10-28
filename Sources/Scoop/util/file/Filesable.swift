@@ -7,6 +7,7 @@
 
 import UIKit
 import Combine
+import CryptoKit
 
 public protocol Filesable {}
 
@@ -85,6 +86,25 @@ public extension Filesable {
     func makeDestinationURL(base: URL?, for original: URL?) -> URL? {
         guard let base = base, let fileName = original?.pathComponents.joined(separator: "") else { return nil }
         return base.appendingPathComponent(fileName)
+    }
+    
+    /// URL을 기반으로 고유한 해시 파일명을 생성합니다.
+    /// 파일명은 `[SHA256 해시값].[원본 확장자]` 형식을 가집니다.
+    ///
+    /// - Parameter url: 원본 파일의 URL
+    /// - Returns: 생성된 고유 파일명
+    func hashedFileName(for url: URL) -> String {
+        let urlString = url.absoluteString
+        let inputData = Data(urlString.utf8)
+        let hashed = SHA256.hash(data: inputData)
+        let hashString = hashed.compactMap { String(format: "%02x", $0) }.joined()
+        
+        let pathExtension = url.pathExtension
+        if pathExtension.isEmpty {
+            return hashString
+        } else {
+            return "\(hashString).\(pathExtension)"
+        }
     }
 }
 

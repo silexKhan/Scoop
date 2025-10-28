@@ -24,7 +24,7 @@ import Combine
  let scoop = Scoop()
  scoop.resume(url: downloadURL)
  */
-public final class Scoop: NSObject, ObservableObject {
+public final class Scoop: NSObject, ObservableObject, Filesable {
 
     // MARK: - Public Publisher
 
@@ -50,8 +50,27 @@ public final class Scoop: NSObject, ObservableObject {
     /// 다운로드 시작 (Combine 방식)
     ///
     /// - Parameter url: 다운로드할 원격 파일 URL
-    /// - Note: 서버의 resume 지원 여부를 판단하여 resumeData 기반 이어받기를 시도하거나 새로 다운로드합니다.
+    /// - Note: 다운로드 시작 전, 로컬에 이미 파일이 있는지 확인하여 캐시처럼 동작합니다.
     public func resume(url: URL) {
+        // 1. 캐시 확인: 해시된 파일명이 이미 존재하는지 확인
+        guard let downloadDir = makeDownloadURL() else {
+            let error = NSError(domain: "ScoopError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create download directory."])
+            completed.send(completion: .failure(error))
+            continuation?.resume(throwing: error)
+            return
+        }
+        
+        let hashedName = hashedFileName(for: url)
+        let finalURL = downloadDir.appendingPathComponent(hashedName)
+
+        if fileExists(at: finalURL) {
+            print("[Scoop] 파일이 이미 존재합니다 (캐시 히트) → \(finalURL.lastPathComponent)")
+            completed.send(finalURL)
+            continuation?.resume(returning: finalURL)
+            return
+        }
+        
+        // 2. 캐시가 없으면 다운로드 진행
         checkResumableSupport(for: url) { [weak self] isResumable in
             guard let self = self else { return }
 
@@ -96,7 +115,7 @@ public final class Scoop: NSObject, ObservableObject {
             try FileManager.default.removeItem(at: resumeDataCachePath)
             print("[Scoop] resumeData 캐시 삭제됨")
         } catch {
-            print("[Scoop] resumeData 캐시 삭제 실패: \(error.localizedDescription)")
+            // 에러 무시
         }
     }
 
@@ -178,19 +197,21 @@ extension Scoop: URLSessionDownloadDelegate {
         
         defer { clearResumeCacheIfNeeded()  }
         
+        guard let sourceURL = downloadTask.originalRequest?.url else {
+            let error = NSError(domain: "ScoopError", code: -2, userInfo: [NSLocalizedDescriptionKey: "Original URL not found in download task."])
+            completed.send(completion: .failure(error))
+            continuation?.resume(throwing: error)
+            return
+        }
+        
         do {
-            let fileManager = FileManager.default
-            let folder = fileManager
-                .urls(for: .documentDirectory, in: .userDomainMask)
-                .first!
-                .appendingPathComponent("scoop", isDirectory: true)
-
-            if !fileManager.fileExists(atPath: folder.path) {
-                try fileManager.createDirectory(at: folder, withIntermediateDirectories: true, attributes: nil)
+            guard let folder = makeDownloadURL() else {
+                let error = NSError(domain: "ScooError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create download directory."])
+                throw error
             }
 
-            let originalFileName = downloadTask.originalRequest?.url?.lastPathComponent ?? UUID().uuidString
-            let finalURL = folder.appendingPathComponent(originalFileName)
+            let fileName = hashedFileName(for: sourceURL)
+            let finalURL = folder.appendingPathComponent(fileName)
 
             if fileManager.fileExists(atPath: finalURL.path) {
                 try fileManager.removeItem(at: finalURL)
